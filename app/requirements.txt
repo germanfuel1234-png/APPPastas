@@ -1,0 +1,10 @@
+# Dependencias del cliente Flet (empaquetadas en builds móviles/de escritorio).
+# `flet build` busca este archivo dentro de app/, no el requirements.txt de
+# la raíz del proyecto (ese incluye deps del backend que el cliente no usa).
+# IMPORTANTE: hay que listar "flet" también — si este archivo existe, deja de
+# incluirse automáticamente y hay que declararlo a mano.
+# Sin el extra "[all]": trae watchdog (hot-reload de desktop), que no tiene
+# wheel para el target de Android y rompe la build móvil.
+flet==1.0.0
+requests==2.34.2
+python-dotenv==1.2.3

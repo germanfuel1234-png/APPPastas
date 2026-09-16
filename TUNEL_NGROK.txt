@@ -1,0 +1,88 @@
+=============================================================
+ Cómo levantar el túnel público del backend (ngrok)
+=============================================================
+
+¿PARA QUÉ SIRVE?
+-----------------
+La app (web, o instalada como APK en un celular) necesita hablarle al
+backend (FastAPI) por internet, no solo desde esta PC. El túnel de ngrok
+expone tu backend local (puerto 8000) con una URL pública tipo:
+
+    https://xxxxx.ngrok-free.dev
+
+Esa URL es la que usan:
+- Mercado Pago para mandar el webhook de pagos (MP_NOTIFICATION_URL).
+- La app instalada (APK) para hablarle al backend (API_BASE_URL).
+
+Si cerrás la terminal / apagás la PC / se corta el túnel, la app deja de
+poder cargar el catálogo o generar pedidos hasta que levantes uno nuevo.
+
+
+REQUISITOS (ya están hechos una sola vez)
+-------------------------------------------
+- ngrok ya está instalado (snap: /snap/bin/ngrok).
+- Ya tiene el authtoken configurado (cuenta gratuita de ngrok).
+  Si alguna vez hay que rehacerlo:
+      ngrok config add-authtoken TU_TOKEN
+  (el token se saca gratis en https://dashboard.ngrok.com/get-started/your-authtoken)
+
+
+PASOS PARA LEVANTAR EL TÚNEL
+-------------------------------
+1. Asegurate de que el backend esté corriendo en el puerto 8000
+   (por ejemplo con run_backend.bat, o
+   .venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000).
+
+2. En OTRA terminal, corré:
+
+       ngrok http 8000
+
+3. ngrok te va a mostrar una pantalla con una línea así:
+
+       Forwarding    https://xxxxx.ngrok-free.dev -> http://localhost:8000
+
+   Esa URL "https://xxxxx.ngrok-free.dev" es la nueva URL pública.
+   OJO: en el plan gratis, esta URL CAMBIA cada vez que reiniciás ngrok
+   (a menos que reserves un dominio estático gratuito, ver más abajo).
+
+
+DESPUÉS DE LEVANTAR EL TÚNEL, ACTUALIZAR:
+--------------------------------------------
+a) En el archivo ".env" (raíz del proyecto), la línea:
+
+       MP_NOTIFICATION_URL=https://xxxxx.ngrok-free.dev/api/webhooks/mercadopago
+
+   y reiniciar el backend para que tome el cambio.
+
+b) En el archivo "app/.env" (para que la app/el APK sepan a qué backend
+   hablarle), la línea:
+
+       API_BASE_URL=https://xxxxx.ngrok-free.dev
+
+   - Si es la app web (flet run --web), con reiniciarla alcanza.
+   - Si es el APK ya instalado en un celular, hay que VOLVER A COMPILARLO
+     con la nueva URL y reinstalarlo (el APK no puede "enterarse" solo de
+     que la URL cambió, queda fija adentro desde que se compiló).
+
+
+TIP: EVITAR QUE LA URL CAMBIE CADA VEZ (dominio estático gratis)
+---------------------------------------------------------------------
+Las cuentas gratuitas de ngrok permiten reservar UN dominio estático fijo
+(no cambia nunca). Se configura una sola vez en:
+
+    https://dashboard.ngrok.com/domains
+
+Y después el túnel se levanta así, siempre con la misma URL:
+
+    ngrok http --url=tu-dominio-fijo.ngrok-free.app 8000
+
+Con esto ya no hace falta actualizar el .env ni recompilar el APK cada vez
+que se reinicia el túnel — la URL queda fija.
+
+
+ALTERNATIVA A FUTURO
+-----------------------
+Si en algún momento quieren que la app funcione siempre sin depender de
+tener una PC prendida con el túnel activo, lo correcto es desplegar el
+backend en un hosting real (Railway, Render, un VPS, etc.) con una URL
+fija propia, y usar esa URL en vez de ngrok.

@@ -1,0 +1,28 @@
+# Entorno virtual
+.venv/
+venv/
+
+# Variables de entorno con secretos
+.env
+app/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Carrito persistido localmente (app/state.py) cuando se corre fuera de `flet run`
+cart.json
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Artefactos de compilación (flet build apk/aab/etc.)
+app/build/
+
+# Sistema
+Thumbs.db
+.DS_Store

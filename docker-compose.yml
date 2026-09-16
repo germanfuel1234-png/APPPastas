@@ -1,0 +1,25 @@
+# Levanta MySQL 8 con la base "fabrica_pastas" ya creada y el esquema cargado.
+# Uso:  docker compose up -d
+# Credenciales por defecto: usuario root / password root (coinciden con .env local).
+services:
+  mysql:
+    image: mysql:8
+    container_name: fabrica_pastas_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "fabrica_pastas"
+    ports:
+      - "3306:3306"
+    volumes:
+      # El esquema se ejecuta automáticamente la primera vez que se crea el volumen.
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  mysql_data:
